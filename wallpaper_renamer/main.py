@@ -1,6 +1,5 @@
 import sys
 from pathlib import Path
-
 sys.path.append(str(Path(__file__).parent.parent))
 from wallpaper_renamer.ui.ui_display import WallpaperRenamerApp, set_window_icon
 import customtkinter as ctk
