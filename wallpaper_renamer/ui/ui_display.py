@@ -36,24 +36,51 @@ def set_window_icon(window):
     try:
         if getattr(sys, 'frozen', False):
             if hasattr(sys, '_MEIPASS'):
+                # 使用打包工具的临时资源目录
                 base_path = sys._MEIPASS
             else:
+                # 使用可执行文件所在目录（Nuitka打包的情况）
                 base_path = os.path.dirname(sys.executable)
+            
+            # Nuitka打包后图标可能在多个可能的位置
+            possible_icon_paths = [
+                  os.path.join(base_path, 'wallpaper_renamer.ico'),
+                  os.path.join(base_path, '..', 'wallpaper_renamer.ico')  # 上一级目录
+              ]
         else:
-            base_path = os.path.dirname(os.path.abspath(__file__))
-        icon_path = os.path.join(base_path, 'wallpaper_renamer.ico')
-        icon_path = os.path.normpath(icon_path)
-        
-        print(f"尝试设置图标的路径: {icon_path}")
-        if not os.path.exists(icon_path):
-            print(f"图标文件不存在于路径: {icon_path}")
+            # 开发环境下使用当前脚本所在目录
+            # 开发环境，获取项目根目录
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            base_path = os.path.dirname(os.path.dirname(current_dir))
+            possible_icon_paths = [
+                os.path.join(base_path, 'wallpaper_renamer.ico'),
+                os.path.join(base_path, 'ui', 'wallpaper_renamer.ico')
+            ]
+
+        # 尝试所有可能的路径
+        icon_path = None
+        for path in possible_icon_paths:
+            path = os.path.normpath(path)
+            if os.path.exists(path):
+                icon_path = path
+                break
+
+        if icon_path is None:
+            # 打印所有尝试过的路径以便调试
+            print("无法找到图标文件，尝试了以下路径:")
+            for path in possible_icon_paths:
+                print(f"- {os.path.normpath(path)}")
+            messagebox.showerror("图标错误", "无法找到图标文件")
             return
-        
+
+        print(f"使用图标路径: {icon_path}")
         window.iconbitmap(default=icon_path)
         if sys.platform.startswith("win"):
             window.after(200, lambda: window.iconbitmap(icon_path))
+            
     except Exception as e:
-        #messagebox.showerror("错误", f"为窗口设置图标时出错: {e}")
+        #print(f"为窗口设置图标时出错: {e}")
+        #messagebox.showerror("错误", f"设置窗口图标时出错: {e}")
         pass
 
 
@@ -138,10 +165,10 @@ class WallpaperRenamerApp:
         # 设置按钮
         settings_button = ctk.CTkButton(
             self.root,
-            text="关于",
-            font=("SimHei", 10),
+            text="软件声明",
+            font= ("SimHei", 10),
             width=100,
-            command=self.open_settings_window
+            command=self.show_disclaimer
         )
         settings_button.pack(pady=PADY)
 
@@ -626,6 +653,48 @@ class WallpaperRenamerApp:
     def scan_single_json(self):
         self.research_json()
 
+    def show_disclaimer(self):
+        # 创建声明窗口
+        disclaimer_window = ctk.CTkToplevel(self.root)
+        disclaimer_window.title("软件声明")
+        disclaimer_window.geometry("600x400")
+        disclaimer_window.resizable(True, True)
+        disclaimer_window.transient(self.root)
+        disclaimer_window.grab_set()
+        set_window_icon(disclaimer_window)
+
+        # 创建滚动条
+        scrollbar = ctk.CTkScrollbar(disclaimer_window)
+        scrollbar.pack(side="right", fill="y")
+
+        # 创建文本框并关联滚动条
+        text_widget = ctk.CTkTextbox(
+            disclaimer_window,
+            yscrollcommand=scrollbar.set,
+            wrap="word",
+            font= ("SimHei", 12)
+        )
+        text_widget.pack(expand=True, fill="both", padx=10, pady=10)
+        scrollbar.configure(command=text_widget.yview)
+
+        # 读取并显示声明内容
+        try:
+            # 获取声明文件路径
+            if getattr(sys, 'frozen', False):
+                base_path = os.path.dirname(sys.executable)
+            else:
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                base_path = os.path.dirname(os.path.dirname(current_dir))
+            disclaimer_path = os.path.join(base_path, 'wallpaper_renamer', 'ui', 'disclaimer.txt')
+            
+            with open(disclaimer_path, 'r', encoding='utf-8') as f:
+                disclaimer_content = f.read()
+            text_widget.insert("1.0", disclaimer_content)
+            text_widget.configure(state="disabled")  # 设置为只读
+        except Exception as e:
+            text_widget.insert("1.0", f"无法加载软件声明: {str(e)}")
+            text_widget.configure(state="disabled")
+
     def open_settings_window(self):
         settings_window = ctk.CTkToplevel(self.root)
         settings_window.title("设置")
@@ -679,7 +748,7 @@ class WallpaperRenamerApp:
             try:
                 subprocess.Popen(['notepad.exe', disclaimer_path])
             except Exception as e:
-                messagebox.showerror("错误", f"打开软件声明文件时出错: {e}")
+                messagebox.showerror("错误", f"打开软件声明文件时出错: {e},您可以在软件目录的ui文件夹中查看软件声明")
         disclaimer_label.bind("<Enter>", on_disclaimer_enter)
         disclaimer_label.bind("<Leave>", on_disclaimer_leave)
         disclaimer_label.bind("<Button-1>", lambda e: open_disclaimer())

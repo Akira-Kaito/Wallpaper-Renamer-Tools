@@ -1,0 +1,2 @@
+打包命令
+nuitka --standalone --windows-disable-console --enable-plugin=tk-inter --windows-icon-from-ico=wallpaper_renamer.ico --include-data-dir=wallpaper_renamer/ui=ui --include-data-dir=wallpaper_renamer/batch_files=batch_files --include-module=win32 --include-package=customtkinter --include-data-file=wallpaper_renamer.ico=wallpaper_renamer.ico --output-dir=build/nuitka --output-filename=WallpaperRenamer wallpaper_renamer/main.py
