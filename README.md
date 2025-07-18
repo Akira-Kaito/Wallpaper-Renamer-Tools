@@ -21,3 +21,15 @@ Wallaper Renamer 非常适合：
 - 需要整理大量图片文件的用户
 
 - 追求系统整洁高效的用户
+
+## 关于项目
+
+本项目使用Python3.13.2版本+customtkinter（一个开源的Python ui库，对Python原有的tkinter进行美化）进行开发。若要编译此项目，需要Python版本为Python3.10及其以上的版本。
+
+## 关于作者
+
+本人目前为高中生，没有太多的精力放在项目的开发上。因此项目的进展相对缓慢，请见谅。如果有任何问题，欢迎通过一下途径向我进行反馈：
+
+B站：[焉晓驰的个人空间-焉晓驰个人主页-哔哩哔哩视频](https://space.bilibili.com/3493274255887085)
+
+爱发电：[焉晓池正在创作wallpaper壁纸备份文件夹重命名工具 | 爱发电](https://afdian.tv/a/bingzhulongyan)
